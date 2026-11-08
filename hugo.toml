@@ -9,6 +9,9 @@ title = "Dynamder's Blog"
 
 locale = "zh-CN" # v0.158+ 用 locale 取代了 languageCode
 defaultContentLanguage = "zh"
+# 中文留在根路径（/posts/...），英文在 /en/ 下。
+# 改成 true 会让中文搬到 /zh/，现有 Giscus 讨论楼（按 pathname 映射）全部失联
+defaultContentLanguageInSubdir = false
 hasCJKLanguage = true # 中文按字计词，摘要/字数统计才准
 
 enableRobotsTXT = true
@@ -90,6 +93,8 @@ ShowRssButtonInSectionTermList = true
 ShowAllPagesInArchive = true
 ShowPageNums = true
 disableScrollToTop = false
+# 语言切换器显示「简体中文 / English」而不是「Zh / En」
+displayFullLangName = true
 
 # 评论区总开关：单篇文章可用 front matter 的 comments = false 单独关掉
 comments = true
@@ -153,3 +158,59 @@ unsafe = true # 允许正文里直接写 HTML（比如 <div align="center">）
 noClasses = false # 跟随明暗主题切换代码高亮
 guessSyntax = true
 lineNos = false
+
+# ─── 多语言 ──────────────────────────────────────────────────
+# 内容按文件名后缀配对：xxx.md（中文）/ xxx.en.md（英文）
+[languages.zh]
+label = "简体中文"
+weight = 1
+
+[languages.en]
+label = "English"
+weight = 2
+title = "Dynamder's Blog"
+locale = "en-US"
+
+# 面向读者的 params 必须在语言级重写，根 [params] 的值不会自动翻译
+[languages.en.params]
+description = "Notes on backend, Go, and infrastructure"
+
+# 只覆盖这一个字段，其余（repo / repoId / categoryId …）从根 [params.giscus] 继承
+[languages.en.params.giscus]
+lang = "en"
+
+[languages.en.params.homeInfoParams]
+Title = "Hi, I'm Dynamder 👋"
+Content = """
+Notes on backend, Go, infrastructure, and the potholes along the way.
+
+- Posts live under [Posts](/posts/)
+- Looking for something specific? Try [Search](/search/)
+- More about me: [About](/about/)
+"""
+
+# 菜单也要按语言各写一份，根 [menu.main] 只服务中文
+[[languages.en.menu.main]]
+name = "Posts"
+url = "/posts/"
+weight = 10
+
+[[languages.en.menu.main]]
+name = "Archive"
+url = "/archives/"
+weight = 20
+
+[[languages.en.menu.main]]
+name = "Tags"
+url = "/tags/"
+weight = 30
+
+[[languages.en.menu.main]]
+name = "Search"
+url = "/search/"
+weight = 40
+
+[[languages.en.menu.main]]
+name = "About"
+url = "/about/"
+weight = 50

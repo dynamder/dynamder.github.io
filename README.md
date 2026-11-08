@@ -22,10 +22,11 @@ hugo.toml                  所有配置：站点信息、菜单、主题参数�
 go.mod / go.sum            主题依赖（Hugo Modules 的 go module）
 archetypes/default.md      hugo new 使用的文章模板
 content/
-  posts/                   文章，每篇一个 .md
+  posts/                   文章；英文版同目录同名加 .en.md
   about.md                 关于页
   archives.md              归档页（layout: archives）
   search.md                搜索页（layout: search）
+  *.en.md                  以上各页的英文版
 layouts/_partials/
   comments.html            评论区，覆盖主题的空钩子
 assets/                    自定义 CSS/JS，同名文件会覆盖主题资源
@@ -131,6 +132,39 @@ Giscus 把每篇文章映射到一个 GitHub Discussion，`mapping = "pathname"`
 ```bash
 gh api repos/<owner>/<repo> --jq .node_id
 gh api graphql -f query='query{repository(owner:"<owner>",name:"<repo>"){discussionCategories(first:20){nodes{id name}}}}'
+```
+
+## 多语言
+
+中文是默认语言，留在根路径；英文在 `/en/` 下。
+
+| | 中文 | 英文 |
+| --- | --- | --- |
+| 内容文件 | `content/posts/foo.md` | `content/posts/foo.en.md` |
+| URL | `/posts/foo/` | `/en/posts/foo/` |
+| 语言码 | `zh` | `en` |
+
+同一路径加 `.en.md` 后缀即自动配对成翻译，主题会据此生成 `hreflang`、文章 meta 下的
+「Translations」互链，以及头部的语言切换器，不需要额外配置。
+
+几点约定：
+
+- **菜单按语言各写一份。** 根级 `[[menu.main]]` 只服务中文，英文用
+  `[[languages.en.menu.main]]`；某语言一旦定义自己的菜单，根级菜单不会合并进去。
+- **面向读者的 `params` 要在 `[languages.en.params]` 下重写。** 根 `[params]` 的值不会自动
+  翻译，`homeInfoParams` 不重写就会出现中文首页文案配英文菜单。映射类型的 params
+  （如 `[params.giscus]`）是按语言合并的，只需覆盖要改的字段。
+- **标签是分语言的。** `/tags/` 和 `/en/tags/` 各自成页，所以中文用 `安全`、英文用
+  `security` 不会互相污染。
+- **`defaultContentLanguageInSubdir` 必须保持 `false`。** 改成 `true` 会让中文搬到
+  `/zh/` 下，现有 Giscus 讨论楼按 pathname 建立，URL 一变就全部失联。
+- 没有对应翻译的文章不会出现在另一种语言的列表、归档和搜索索引里。
+
+英文 slug 想和中文不同时，文件名配对失效，需要在两份 front matter 里写相同的
+`translationKey`：
+
+```toml
+translationKey = 'memory-social-engineer'
 ```
 
 ## 约束与易错点
