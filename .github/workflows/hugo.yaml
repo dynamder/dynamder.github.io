@@ -24,7 +24,6 @@ jobs:
     runs-on: ubuntu-latest
     env:
       HUGO_VERSION: 0.169.0
-      HUGO_CACHEDIR: ${{ runner.temp }}/hugo_cache
       TZ: Asia/Shanghai
     steps:
       - name: Checkout
@@ -50,6 +49,9 @@ jobs:
         uses: actions/configure-pages@v5
 
       - name: Build
+        env:
+          # runner 上下文只在 step 级别可用，放作业级 env 会导致 startup_failure
+          HUGO_CACHEDIR: ${{ runner.temp }}/hugo_cache
         run: hugo --gc --minify --baseURL "${{ steps.pages.outputs.base_url }}/"
 
       - name: Upload artifact
