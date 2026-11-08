@@ -17,24 +17,56 @@
     /* line-height: 1.75; */
 }
 
-/* 段间距变大后标题必须更"重"，否则层级会糊：
-   上方留白 48px > 段间距 34px，下方留白 14px < 段间距，让标题贴近自己的内容 */
+/* ── 垂直节奏 ─────────────────────────────────────────────
+   三级尺度，靠"间距大小"本身告诉读者这是哪一层：
+     小段落之间   34px  (--content-gap)
+     换小节 h4-h6  44-54px
+     换大节 h2-h3  64-78px
+     换章   h1     92px
+
+   规则：标题上方留白 > 段间距，下方留白 < 段间距（标题贴着自己的内容）。
+   上方间距写在 margin-top 上，与上一段的 margin-bottom 折叠后取较大值，
+   所以只有标题自身的 margin-top 决定跨节间距。
+   ───────────────────────────────────────────────────────── */
+
+.md-content h1 {
+    margin-top: 92px;
+    margin-bottom: 18px;
+}
 
 .md-content h2 {
-    margin-top: 48px;
+    margin-top: 78px;
     margin-bottom: 14px;
 }
 
 .md-content h3 {
-    margin-top: 40px;
+    margin-top: 64px;
     margin-bottom: 12px;
 }
 
-.md-content h4,
-.md-content h5,
-.md-content h6 {
-    margin-top: 32px;
+.md-content h4 {
+    margin-top: 54px;
+    margin-bottom: 10px;
+}
+
+.md-content h5 {
+    margin-top: 48px;
     margin-bottom: 8px;
+}
+
+.md-content h6 {
+    margin-top: 44px;
+    margin-bottom: 8px;
+}
+
+/* 分隔线是"大段落"的硬边界，间距要大于段间距，否则不如不画 */
+.md-content hr {
+    margin: 56px 0;
+}
+
+/* 内容块的第一个元素不吃上方留白，避免正文首行被推开 */
+.md-content > :first-child {
+    margin-top: 0;
 }
 
 /* 列表项之间也松一点，默认 0.3rem（4.8px）在中文下偏挤 */
