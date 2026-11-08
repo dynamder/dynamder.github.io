@@ -1,0 +1,137 @@
+# ─────────────────────────────────────────────────────────────
+#  站点基础配置  hugo.toml
+#  改完执行 `hugo server -D` 看效果，`hugo` 产出 public/
+# ─────────────────────────────────────────────────────────────
+
+# TODO: 换成你自己的地址。用户站必须是 https://<用户名>.github.io/
+baseURL = "https://dynamder.github.io/"
+title = "Dynamder's Blog"
+
+locale = "zh-CN" # v0.158+ 用 locale 取代了 languageCode
+defaultContentLanguage = "zh"
+hasCJKLanguage = true # 中文按字计词，摘要/字数统计才准
+
+enableRobotsTXT = true
+enableEmoji = true
+enableInlineShortcodes = true
+pygmentsUseClasses = true
+buildDrafts = false
+buildFuture = false
+buildExpired = false
+
+copyright = "© {YEAR} Dynamder"
+
+# 主题通过 Hugo Modules 管理（见下面 [module]），不用 themes/ 目录
+[module]
+# 国内访问 github.com 常不通，主题走 Go 模块代理下载
+proxy = "https://goproxy.cn,direct"
+
+[[module.imports]]
+path = "github.com/adityatelange/hugo-PaperMod"
+
+# 首页除了 HTML/RSS 还要出 index.json，客户端搜索 (Fuse.js) 靠它
+[outputs]
+home = ["HTML", "RSS", "JSON"]
+
+[pagination]
+pagerSize = 10
+
+[minify]
+disableXML = true
+
+[taxonomies]
+tag = "tags"
+category = "categories"
+
+# ─── 顶部导航 ────────────────────────────────────────────────
+[[menu.main]]
+name = "文章"
+url = "/posts/"
+weight = 10
+
+[[menu.main]]
+name = "归档"
+url = "/archives/"
+weight = 20
+
+[[menu.main]]
+name = "标签"
+url = "/tags/"
+weight = 30
+
+[[menu.main]]
+name = "搜索"
+url = "/search/"
+weight = 40
+
+[[menu.main]]
+name = "关于"
+url = "/about/"
+weight = 50
+
+# ─── 主题参数 ────────────────────────────────────────────────
+[params]
+env = "production" # 开启 OG / Twitter Card / Schema.org
+description = "记录一些后端、Go、基础设施与踩坑"
+author = "Dynamder"
+defaultTheme = "auto" # 跟随系统，可手动切换
+mainSections = ["posts"]
+DateFormat = "2006-01-02"
+
+ShowReadingTime = true
+ShowWordCount = true
+ShowShareButtons = true
+ShowPostNavLinks = true
+ShowBreadCrumbs = true
+ShowCodeCopyButtons = true
+ShowToc = true # 文章目录
+TocOpen = false
+ShowRssButtonInSectionTermList = true
+ShowAllPagesInArchive = true
+ShowPageNums = true
+disableScrollToTop = false
+
+[params.homeInfoParams]
+Title = "你好，我是 Dynamder 👋"
+Content = """
+这里放后端、Go、基础设施和自己踩过的坑。
+
+- 文章都在 [文章](/posts/) 里，标签见 [标签](/tags/)
+- 想找什么直接点 [搜索](/search/)
+- 关于我：[关于](/about/)
+"""
+
+[[params.socialIcons]]
+name = "github"
+url = "https://github.com/dynamder"
+
+[[params.socialIcons]]
+name = "Rss"
+url = "/index.xml"
+
+# 每篇文章底部的「编辑此页」链接
+[params.editPost]
+URL = "https://github.com/dynamder/dynamder.github.io/edit/main/content"
+Text = "编辑此页"
+appendFilePath = true
+
+# 站内搜索的 Fuse.js 参数
+[params.fuseOpts]
+isCaseSensitive = false
+shouldSort = true
+location = 0
+distance = 1000
+threshold = 0.4
+minMatchCharLength = 0
+keys = ["title", "permalink", "summary", "content"]
+
+# ─── Markdown 渲染 ───────────────────────────────────────────
+[markup]
+[markup.goldmark]
+[markup.goldmark.renderer]
+unsafe = true # 允许正文里直接写 HTML（比如 <div align="center">）
+
+[markup.highlight]
+noClasses = false # 跟随明暗主题切换代码高亮
+guessSyntax = true
+lineNos = false

@@ -1,0 +1,16 @@
+# Hugo 构建产物
+public/
+resources/_gen/
+
+# 本文件仓库里用到的本地缓存（Hugo 模块 / 下载的 binary）
+.cache/
+.tools/
+.hugo_build.lock
+hugo.zip
+
+# 编辑器 / 系统
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+node_modules/
