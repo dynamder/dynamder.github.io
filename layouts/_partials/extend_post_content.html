@@ -1,0 +1,66 @@
+{{- /*
+  右侧栏目录 —— 长文导航。
+  窄屏不渲染（CSS display:none），宽屏固定到正文右侧的空白处。
+
+  内容用 Hugo 内置的 .TableOfContents（markup.tableOfContents，默认 h2–h3），
+  而不是主题 partials/toc.html 里那套 findRE 正则拼出来的 <details>，
+  这样层次和锚点都由 Hugo 维护。
+*/ -}}
+{{- if and .IsPage (.Param "ShowToc") (gt (len .TableOfContents) 0) }}
+<aside class="toc-side" aria-label="{{ i18n "toc" | default "目录" }}">
+  <div class="toc-side-title">{{ i18n "toc" | default "目录" }}</div>
+  {{ .TableOfContents }}
+</aside>
+<script>
+  (function () {
+    var aside = document.querySelector(".toc-side");
+    if (!aside) return;
+
+    var links = [].slice.call(aside.querySelectorAll('a[href^="#"]'));
+    var targets = [];
+    links.forEach(function (a) {
+      var id = decodeURIComponent(a.getAttribute("href").slice(1));
+      var el = document.getElementById(id);
+      if (el) targets.push({ el: el, link: a });
+    });
+    if (!targets.length) return;
+
+    var current = null;
+    function activate(index) {
+      if (index === current) return;
+      current = index;
+      links.forEach(function (a) { a.classList.remove("active"); });
+      if (index >= 0) targets[index].link.classList.add("active");
+    }
+
+    // 当前小节 = 最后一个已越过视口上方 1/4 处的标题
+    function sync() {
+      var line = window.innerHeight * 0.25;
+      var idx = 0;
+      for (var i = 0; i < targets.length; i++) {
+        if (targets[i].el.getBoundingClientRect().top <= line) idx = i;
+        else break;
+      }
+      activate(idx);
+      // 让高亮项在侧栏内可见
+      var active = aside.querySelector("a.active");
+      if (active) {
+        var box = aside.getBoundingClientRect();
+        var r = active.getBoundingClientRect();
+        if (r.top < box.top || r.bottom > box.bottom) {
+          aside.scrollTop += r.top - box.top - box.height / 2;
+        }
+      }
+    }
+
+    var ticking = false;
+    window.addEventListener("scroll", function () {
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(function () { sync(); ticking = false; });
+    }, { passive: true });
+    window.addEventListener("resize", sync, { passive: true });
+    sync();
+  })();
+</script>
+{{- end }}

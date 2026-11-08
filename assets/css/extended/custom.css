@@ -116,3 +116,79 @@ a:focus-visible, button:focus-visible {
     outline: 2px solid var(--accent);
     outline-offset: 2px;
 }
+
+/* ─────────────────────────────────────────────────────────────
+   右侧栏目录（长文导航）
+   正文列固定 720px（--main-width），宽屏两侧有空白可用。
+   窄屏完全不渲染，不占位、不影响布局。
+   ───────────────────────────────────────────────────────────── */
+
+.toc-side {
+    display: none;
+}
+
+@media (min-width: 1200px) {
+    .toc-side {
+        display: block;
+        position: fixed;
+        top: 96px;
+        /* 贴在正文列右侧，留 24px 缝隙；屏幕再宽也不会越跑越远 */
+        right: max(24px, calc((100vw - var(--main-width)) / 2 - 236px));
+        width: 212px;
+        max-height: calc(100vh - 160px);
+        overflow-y: auto;
+        font-size: 13.5px;
+        line-height: 1.45;
+        scrollbar-width: thin;
+        z-index: 2;
+    }
+
+    /* 有侧栏时就不再重复显示文首那个折叠目录 */
+    body:has(.toc-side) .post-single > details.toc {
+        display: none;
+    }
+}
+
+.toc-side-title {
+    margin-bottom: 10px;
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--secondary);
+}
+
+.toc-side #TableOfContents ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.toc-side #TableOfContents ul ul {
+    padding-inline-start: 12px;
+}
+
+.toc-side a {
+    display: block;
+    padding: 3px 0 3px 10px;
+    margin-bottom: 2px;
+    border-inline-start: 2px solid transparent;
+    color: var(--secondary);
+    text-decoration: none;
+    transition: color 0.15s, border-color 0.15s;
+}
+
+.toc-side a:hover {
+    color: var(--primary);
+}
+
+/* 当前位置用强调色，和链接/引用同一套标识色 */
+.toc-side a.active {
+    color: var(--accent);
+    border-inline-start-color: var(--accent);
+}
+
+@media print {
+    .toc-side {
+        display: none;
+    }
+}
