@@ -62,7 +62,33 @@ static/                   # 原样拷贝（favicon、图片等）
 .github/workflows/hugo.yaml
 ```
 
+## 评论（Giscus）
+
+已经接好了，基于 GitHub Discussions，零后端。代码在
+[layouts/_partials/comments.html](layouts/_partials/comments.html)（覆盖主题的空钩子），
+配置在 `hugo.toml` 的 `[params.giscus]`。
+
+**上线前还有一步：安装 giscus GitHub App**，否则 iframe 里会显示
+"giscus is not installed on this repository"。
+
+👉 https://github.com/apps/giscus/installations/new
+
+选 `dynamder.github.io` 这个仓库即可。App 装在账号上时也可以只授权这一个仓库。
+
+其他要点：
+
+- 仓库必须是 **public**，且 **Discussions 已开启**（已通过 API 打开）
+- `repoId` / `categoryId` 是仓库绑定的，换仓库要重新取：
+  ```bash
+  gh api repos/<owner>/<repo> --jq .node_id
+  gh api graphql -f query='query{repository(owner:"<owner>",name:"<repo>"){discussionCategories(first:20){nodes{id name}}}}'
+  ```
+- 评论楼按 `mapping = "pathname"` 映射到讨论，**改标题不会断，改 URL 会断**
+- 关闭某篇文章的评论：front matter 里加 `comments = false`
+- 主题跟着 PaperMod 的明暗切换自动变（`html[data-theme]` + postMessage）
+
 ## 几个必须知道的点
+
 
 **1. baseURL。** 现在是 `https://dynamder.github.io/`，对应仓库名 `dynamder.github.io`。
 如果改成项目站（`https://<user>.github.io/<repo>/`），`baseURL` 得带上仓库名，否则 CSS 404。
@@ -85,9 +111,20 @@ export HUGO_MODULE_PROXY=https://goproxy.cn
 **5. draft 与日期。** `buildFuture = false`，所以 front matter 的 `date` 写成未来时间，
 文章会直接不生成。
 
+**6. workflow 里的上下文限制。** `${{ runner.temp }}` 这类 `runner` 上下文**只能在 step 级别**
+用；写进作业级 `env` 不会报语法错，而是让整个 run 变成 `startup_failure`——0 个 job、
+0 秒结束、日志里什么都没有。排查时先看 `gh run view <id> --json jobs`，`total_count=0` 就是这个毛病。
+
+## 上线状态
+
+- 站点：https://dynamder.github.io/
+- Pages 源：GitHub Actions（`gh api -X PUT .../pages -f build_type=workflow` 改的，
+  新建仓库默认是 `legacy`，按分支发布，会把 Actions 部署拒掉）
+
 ## 待办
 
-- [ ] 评论：Giscus（GitHub Discussions，零后端）或 Waline
+- [x] 评论：Giscus
+- [ ] 安装 giscus App（见上文，唯一还没做的一步）
 - [ ] 统计：Cloudflare Web Analytics / 自建 Umami
 - [ ] 自定义域名 + CNAME（放 `static/`，别放根目录，会被构建覆盖）
 - [ ] favicon 和 OG 图
