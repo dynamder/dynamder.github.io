@@ -47,14 +47,14 @@
    一个强调色无法同时满足亮/暗底色的对比度，所以按主题分两值
    ───────────────────────────────────────────────────────────── */
 
-/* 当前用蓝。换色只改下面两行，亮/暗必须一起换（同一个色过不了两边的对比度） */
-:root { --accent: #005f9e; --accent-soft: rgba(0, 95, 158, 0.10); }
-html[data-theme="dark"] { --accent: #79b8ff; --accent-soft: rgba(121, 184, 255, 0.14); }
+/* 当前用靛 indigo。换色只改下面两行，亮/暗必须一起换（同一个色过不了两边的对比度） */
+:root { --accent: #4a4fc4; --accent-soft: rgba(74, 79, 196, 0.10); }
+html[data-theme="dark"] { --accent: #a5b4fc; --accent-soft: rgba(165, 180, 252, 0.14); }
 
 /* 备选配对（对白底和 #1d1e20 都实测 ≥ 4.5:1）：
-   靛 indigo   亮 #4a4fc4  暗 #a5b4fc
-   青 teal     亮 #0f766e  暗 #5eead4
-   琥珀 amber  亮 #9a5b12  暗 #f0b429
+   蓝 blue    亮 #005f9e  暗 #79b8ff
+   青 teal    亮 #0f766e  暗 #5eead4
+   琥珀 amber 亮 #9a5b12  暗 #f0b429
    --accent-soft 用同色低透明度：亮 0.10 / 暗 0.14 */
 
 /* 正文链接：保留强调色 + 下划线，不只靠颜色区分 */
