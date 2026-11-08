@@ -118,7 +118,7 @@ a:focus-visible, button:focus-visible {
 }
 
 /* ─────────────────────────────────────────────────────────────
-   右侧栏目录（长文导航）
+   侧栏目录（长文导航）
    正文列固定 720px（--main-width），宽屏两侧有空白可用。
    窄屏完全不渲染，不占位、不影响布局。
    ───────────────────────────────────────────────────────────── */
@@ -127,18 +127,22 @@ a:focus-visible, button:focus-visible {
     display: none;
 }
 
-@media (min-width: 1200px) {
+/* 侧栏宽度与离正文的缝隙；左边放目录，视线先落在文字上再往左扫 */
+@media (min-width: 1280px) {
     .toc-side {
+        --toc-w: 208px;
+        --toc-gap: 56px;
+
         display: block;
         position: fixed;
         top: 96px;
-        /* 贴在正文列右侧，留 24px 缝隙；屏幕再宽也不会越跑越远 */
-        right: max(24px, calc((100vw - var(--main-width)) / 2 - 236px));
-        width: 212px;
+        /* 左边，紧贴正文列左侧减去宽度和缝隙；屏幕再宽也不会越跑越远 */
+        left: max(20px, calc((100vw - var(--main-width)) / 2 - var(--toc-w) - var(--toc-gap)));
+        width: var(--toc-w);
         max-height: calc(100vh - 160px);
         overflow-y: auto;
-        font-size: 13.5px;
-        line-height: 1.45;
+        font-size: 13px;
+        line-height: 1.7;
         scrollbar-width: thin;
         z-index: 2;
     }
@@ -164,17 +168,31 @@ a:focus-visible, button:focus-visible {
 }
 
 .toc-side #TableOfContents ul ul {
-    padding-inline-start: 12px;
+    padding-inline-start: 10px;
+}
+
+/* 每个 h2 是一组，组与组之间空开，避免 30 条挤成一整片 */
+.toc-side #TableOfContents > ul > li {
+    margin-top: 12px;
+}
+
+.toc-side #TableOfContents > ul > li:first-child {
+    margin-top: 0;
 }
 
 .toc-side a {
     display: block;
     padding: 3px 0 3px 10px;
-    margin-bottom: 2px;
     border-inline-start: 2px solid transparent;
     color: var(--secondary);
     text-decoration: none;
     transition: color 0.15s, border-color 0.15s;
+}
+
+/* h3 条目小一号并缩进，h2 才是可扫读的骨架。
+   颜色保持 --secondary，不再调淡——再淡就要跌破 4.5:1 了 */
+.toc-side #TableOfContents ul ul a {
+    font-size: 12.5px;
 }
 
 .toc-side a:hover {
