@@ -1,130 +1,176 @@
 # Dynamder's Blog
 
-Hugo + PaperMod 的个人技术博客，GitHub Actions 构建，GitHub Pages 托管。
+个人技术博客的站点源码，线上地址 <https://dynamder.github.io/>。
 
-## 本地开发
+内容围绕后端、Go 和基础设施，写作与发布都只依赖 Markdown 和一次 `git push`。
 
-仓库里没有提交 Hugo 二进制（`.tools/` 已 gitignore）。本地跑之前先把 Hugo 装到 `.tools/`，
-或者自己 `winget install Hugo.Hugo.Extended` 装到系统里。
+## 技术栈
 
-```bash
-# 方式一：用仓库内的本地副本（没装到 PATH）
-export HUGO_CACHEDIR="$PWD/.cache/hugo"   # 把模块缓存留在仓库内，免得写沙箱外的目录
-./.tools/hugo/hugo.exe server -D          # http://localhost:1313
+| 环节 | 选型 | 说明 |
+| --- | --- | --- |
+| 生成器 | Hugo 0.169 extended | Go 编写的单二进制，无运行时依赖 |
+| 主题 | PaperMod | 通过 Hugo Modules 引入，不在 `themes/` 下 |
+| 构建 / 部署 | GitHub Actions | `main` 分支 push 触发 |
+| 托管 | GitHub Pages | 用户站，挂在根域名下 |
+| 评论 | Giscus | 基于 GitHub Discussions，零后端 |
+| 搜索 | Fuse.js | 构建时输出 `index.json`，客户端检索 |
 
-# 方式二：已装到 PATH
-hugo server -D
-```
-
-只构建不预览：
-
-```bash
-./.tools/hugo/hugo.exe --gc --minify       # 产物在 public/
-```
-
-## 写一篇新文章
-
-```bash
-./.tools/hugo/hugo.exe new content posts/my-post.md
-```
-
-模板在 `archetypes/default.md`，生成的草稿是 `draft = true`，本地预览加 `-D` 能看到，
-**发布前要改成 `draft = false`**（workflow 里没开 `--buildDrafts`）。
-
-正文里的 `summary` 建议手写：列表页和搜索结果都用它，不写就自动截取开头。
-
-## 发布
-
-推到 `main` 即可。
-
-```bash
-git add -A && git commit -m "post: something" && git push
-```
-
-`.github/workflows/hugo.yaml` 会装 Go + Hugo(extended) → `hugo --minify` → 上传 artifact →
-`deploy-pages`。不需要 `gh-pages` 分支，也不需要提交 `public/`。
-
-Pages 的 Source 要在仓库 **Settings → Pages → Build and deployment** 里设为
-**GitHub Actions**（不是 Deploy from a branch）。
-
-## 目录
+## 目录结构
 
 ```text
-hugo.toml                 # 所有配置：站点信息、菜单、主题参数、搜索
-go.mod / go.sum           # 主题依赖（Hugo Modules）
-archetypes/default.md     # 新文章模板
+hugo.toml                  所有配置：站点信息、菜单、主题参数、评论、搜索
+go.mod / go.sum            主题依赖（Hugo Modules 的 go module）
+archetypes/default.md      hugo new 使用的文章模板
 content/
-  posts/                  # 文章
-  about.md  archives.md  search.md
-assets/                   # 自定义 CSS/JS，同名文件会覆盖主题的
-layouts/                  # 覆盖主题模板
-static/                   # 原样拷贝（favicon、图片等）
+  posts/                   文章，每篇一个 .md
+  about.md                 关于页
+  archives.md              归档页（layout: archives）
+  search.md                搜索页（layout: search）
+layouts/_partials/
+  comments.html            评论区，覆盖主题的空钩子
+assets/                    自定义 CSS/JS，同名文件会覆盖主题资源
+static/                    原样拷贝到站点根目录（favicon、CNAME、图片）
 .github/workflows/hugo.yaml
 ```
 
-## 评论（Giscus）
+`themes/` 目录没有被使用；主题由 `go.mod` 声明、Hugo 在构建时拉取。
 
-已经接好了，基于 GitHub Discussions，零后端。代码在
-[layouts/_partials/comments.html](layouts/_partials/comments.html)（覆盖主题的空钩子），
-配置在 `hugo.toml` 的 `[params.giscus]`。
+## 环境准备
 
-**上线前还有一步：安装 giscus GitHub App**，否则 iframe 里会显示
-"giscus is not installed on this repository"。
+- Hugo **extended** ≥ 0.158（主题要求）
+- Go ≥ 1.21（Hugo Modules 拉取主题需要）
 
-👉 https://github.com/apps/giscus/installations/new
+Windows 上装 Hugo 用 `winget install Hugo.Hugo.Extended`，或把二进制解压到任意目录。
 
-选 `dynamder.github.io` 这个仓库即可。App 装在账号上时也可以只授权这一个仓库。
-
-其他要点：
-
-- 仓库必须是 **public**，且 **Discussions 已开启**（已通过 API 打开）
-- `repoId` / `categoryId` 是仓库绑定的，换仓库要重新取：
-  ```bash
-  gh api repos/<owner>/<repo> --jq .node_id
-  gh api graphql -f query='query{repository(owner:"<owner>",name:"<repo>"){discussionCategories(first:20){nodes{id name}}}}'
-  ```
-- 评论楼按 `mapping = "pathname"` 映射到讨论，**改标题不会断，改 URL 会断**
-- 关闭某篇文章的评论：front matter 里加 `comments = false`
-- 主题跟着 PaperMod 的明暗切换自动变（`html[data-theme]` + postMessage）
-
-## 几个必须知道的点
-
-
-**1. baseURL。** 现在是 `https://dynamder.github.io/`，对应仓库名 `dynamder.github.io`。
-如果改成项目站（`https://<user>.github.io/<repo>/`），`baseURL` 得带上仓库名，否则 CSS 404。
-
-**2. 主题走 Hugo Modules，不是 themes/ 目录。** 升级主题：
+## 本地预览
 
 ```bash
-export HUGO_MODULE_PROXY=https://goproxy.cn
-./.tools/hugo/hugo.exe mod get -u github.com/adityatelange/hugo-PaperMod
-./.tools/hugo/hugo.exe mod tidy
+hugo server -D            # http://localhost:1313，包含草稿
 ```
 
-**3. 国内网络。** `github.com` 常连不上，所以 `hugo.toml` 里写死了
-`module.proxy = "https://goproxy.cn,direct"`。Hugo 的 `module.proxy` 默认是 `direct`，
-它会绕过 `GOPROXY` 自己去 clone，只设环境变量没用。
+只构建不预览，产物在 `public/`：
 
-**4. 中文 i18n。** `defaultContentLanguage = "zh"`（不是 `zh-cn`）。
-主题只提供 `i18n/zh.yaml`，写成 `zh-cn` 会命中不了、回落到英文（"2 min" / "Table of Contents"）。
+```bash
+hugo --gc --minify
+```
 
-**5. draft 与日期。** `buildFuture = false`，所以 front matter 的 `date` 写成未来时间，
-文章会直接不生成。
+模块缓存默认写在用户目录下；想让它留在仓库内可以设 `HUGO_CACHEDIR=$PWD/.cache/hugo`。
 
-**6. workflow 里的上下文限制。** `${{ runner.temp }}` 这类 `runner` 上下文**只能在 step 级别**
-用；写进作业级 `env` 不会报语法错，而是让整个 run 变成 `startup_failure`——0 个 job、
-0 秒结束、日志里什么都没有。排查时先看 `gh run view <id> --json jobs`，`total_count=0` 就是这个毛病。
+仓库内可能放有一份便携版 Hugo（`.tools/`，已 gitignore）。若 `hugo` 不在 PATH 里，
+把上面的命令换成 `./.tools/hugo/hugo.exe`。
 
-## 上线状态
+## 写作
 
-- 站点：https://dynamder.github.io/
-- Pages 源：GitHub Actions（`gh api -X PUT .../pages -f build_type=workflow` 改的，
-  新建仓库默认是 `legacy`，按分支发布，会把 Actions 部署拒掉）
+```bash
+hugo new content posts/my-post.md
+```
 
-## 待办
+生成的文件带 `draft = true`，本地预览加 `-D` 可见，**发布前改为 `draft = false`**
+（构建流程没有开 `--buildDrafts`）。
 
-- [x] 评论：Giscus
-- [ ] 安装 giscus App（见上文，唯一还没做的一步）
-- [ ] 统计：Cloudflare Web Analytics / 自建 Umami
-- [ ] 自定义域名 + CNAME（放 `static/`，别放根目录，会被构建覆盖）
-- [ ] favicon 和 OG 图
+front matter 可用字段：
+
+| 字段 | 作用 |
+| --- | --- |
+| `title` | 标题 |
+| `date` | 发布时间，同时决定归档排序；不要填未来时间（见「约束」） |
+| `draft` | `true` 时只在 `-D` 预览中可见 |
+| `summary` | 列表页摘要与搜索结果显示的内容，不写则自动截取正文开头 |
+| `tags` / `categories` | 分类索引 |
+| `comments` | 设为 `false` 可关掉本文评论 |
+| `cover.image` | 封面图，放在文章同目录或 `static/` |
+
+## 发布
+
+提交并推送到 `main`：
+
+```bash
+git add -A && git commit -m "post: 标题" && git push
+```
+
+工作流依次执行：检出代码 → 装 Go 与 Hugo(extended) → `hugo --minify` →
+上传 artifact → `deploy-pages`。不需要 `gh-pages` 分支，也不需要提交 `public/`。
+
+仓库的 **Settings → Pages → Build and deployment → Source** 必须是 **GitHub Actions**。
+新建仓库默认是 `Deploy from a branch`，用 Actions 部署会被拒绝，可以用下面的命令切换：
+
+```bash
+gh api -X PUT repos/<owner>/<repo>/pages -f build_type=workflow
+```
+
+## 配置
+
+全部集中在 `hugo.toml`，常用的几项：
+
+| 配置 | 说明 |
+| --- | --- |
+| `baseURL` | 站点绝对地址，**必须与仓库形态匹配** |
+| `title` / `params.author` / `params.description` | 站点元信息，影响 SEO 与 OG 卡片 |
+| `params.homeInfoParams` | 首页自我介绍 |
+| `params.mainSections` | 首页列表展示哪些 section |
+| `params.ShowToc` / `params.comments` 等 | 主题功能开关，见 PaperMod 文档 |
+| `[[menu.main]]` | 顶部导航 |
+| `[params.giscus]` | 评论区凭据 |
+| `[params.fuseOpts]` | 搜索匹配策略 |
+
+## 评论
+
+Giscus 把每篇文章映射到一个 GitHub Discussion，`mapping = "pathname"` 表示按 URL 路径
+建立映射，因此改标题不会断楼、改 URL 会断。
+
+启用条件：
+
+1. 仓库 **public**
+2. Discussions **已开启**
+3. 仓库上安装了 [giscus App](https://github.com/apps/giscus/installations/new)
+
+缺第 3 条时，评论框会显示 "giscus is not installed on this repository"。
+
+`repoId` 和 `categoryId` 与仓库绑定，换仓库需要重新获取后更新 `hugo.toml`：
+
+```bash
+gh api repos/<owner>/<repo> --jq .node_id
+gh api graphql -f query='query{repository(owner:"<owner>",name:"<repo>"){discussionCategories(first:20){nodes{id name}}}}'
+```
+
+## 约束与易错点
+
+**`baseURL` 必须与仓库名匹配。** 仓库叫 `<user>.github.io` 时站点在根路径，`baseURL` 是
+`https://<user>.github.io/`；换成项目站（`https://<user>.github.io/<repo>/`）时 `baseURL`
+必须带上仓库名，否则样式与脚本全部 404。
+
+**文章 URL 由文件名决定，一旦发布就不要改名。** 默认 permalink 是 `/posts/<文件名>/`，
+评论楼按路径映射，重命名会让旧讨论楼失效，外部链接也会断。要改结构应在发布前定好，
+或改用 front matter 的 `url` 并做跳转。
+
+**`module.proxy` 默认是 `direct`。** 它不会读 `GOPROXY` 环境变量，而是自己 clone 仓库，
+所以在 `github.com` 不可达的网络下必须显式配置 `module.proxy = "https://goproxy.cn,direct"`。
+升级主题：
+
+```bash
+hugo mod get -u github.com/adityatelange/hugo-PaperMod
+hugo mod tidy
+```
+
+**语言码用 `zh` 而不是 `zh-cn`。** 主题只提供 `i18n/zh.yaml`，写成 `zh-cn` 命中不到翻译，
+界面会回落到英文（`2 min`、`Table of Contents`）。
+
+**`buildFuture = false`。** front matter 的 `date` 晚于构建时间时文章不会生成，且构建过程
+不报错。
+
+**工作流里的上下文作用域。** `runner`、`steps` 等上下文只能在 step 级别使用；写进作业级
+`env` 不会产生语法错误，而是让整个 run 以 `startup_failure` 结束——0 个 job、0 秒、
+没有日志可看。
+
+**自定义域名。** `CNAME` 文件要放 `static/`，放仓库根目录会被构建产物覆盖。
+两者不要同时配，Pages 设置里的 custom domain 会和 `CNAME` 互相影响。
+
+## 主题定制
+
+覆盖主题文件只需在仓库里放同路径文件，Hugo 会优先使用仓库内的版本：
+
+- 改样式 → `assets/css/extended/custom.css`（PaperMod 约定，自动追加）
+- 改模板 → `layouts/` 下同名文件
+- 改文案 → `i18n/<lang>.yaml`
+
+主题升级不会影响这些覆盖文件，但主题改动了被覆盖的模板时需要手动同步。
