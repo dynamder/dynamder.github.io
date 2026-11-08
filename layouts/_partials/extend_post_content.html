@@ -1,6 +1,6 @@
 {{- /*
-  右侧栏目录 —— 长文导航。
-  窄屏不渲染（CSS display:none），宽屏固定到正文右侧的空白处。
+  侧栏目录 —— 长文导航。
+  窄屏不渲染（CSS display:none），宽屏固定到正文左侧的空白处。
 
   内容用 Hugo 内置的 .TableOfContents（markup.tableOfContents，默认 h2–h3），
   而不是主题 partials/toc.html 里那套 findRE 正则拼出来的 <details>，
@@ -15,6 +15,23 @@
   (function () {
     var aside = document.querySelector(".toc-side");
     if (!aside) return;
+
+    // 滚轮停在目录上时不要把页面滚走。
+    // 目录自己能滚就滚它；滚到头、或者条目少到不需要滚，就吞掉这次滚轮
+    // （overscroll-behavior 只在可滚动容器上生效，装不下时不滚的元素管不住）。
+    aside.addEventListener("wheel", function (e) {
+      if (e.ctrlKey) return; // 让 ctrl + 滚轮缩放正常走
+      var canScroll = aside.scrollHeight - aside.clientHeight > 1;
+      if (!canScroll) {
+        e.preventDefault();
+        return;
+      }
+      var atTop = aside.scrollTop <= 0;
+      var atBottom = aside.scrollTop + aside.clientHeight >= aside.scrollHeight - 1;
+      if ((e.deltaY < 0 && atTop) || (e.deltaY > 0 && atBottom)) {
+        e.preventDefault();
+      }
+    }, { passive: false });
 
     var links = [].slice.call(aside.querySelectorAll('a[href^="#"]'));
     var targets = [];
@@ -61,6 +78,7 @@
     }, { passive: true });
     window.addEventListener("resize", sync, { passive: true });
     sync();
+
   })();
 </script>
 {{- end }}

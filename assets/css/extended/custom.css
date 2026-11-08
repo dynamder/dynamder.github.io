@@ -131,7 +131,7 @@ a:focus-visible, button:focus-visible {
 @media (min-width: 1280px) {
     .toc-side {
         --toc-w: 208px;
-        --toc-gap: 56px;
+        --toc-gap: 96px;
 
         display: block;
         position: fixed;
@@ -144,6 +144,8 @@ a:focus-visible, button:focus-visible {
         font-size: 13px;
         line-height: 1.7;
         scrollbar-width: thin;
+        /* 滚到两端时不要把滚动链传给页面（配合 partial 里的 wheel 守卫） */
+        overscroll-behavior: contain;
         z-index: 2;
     }
 
