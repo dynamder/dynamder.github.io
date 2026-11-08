@@ -5,6 +5,7 @@ draft = false
 ShowToc = false
 ShowReadingTime = false
 ShowWordCount = false
+comments = false # 关于页不开评论
 +++
 
 写后端、Go、基础设施，以及一些踩过的坑。

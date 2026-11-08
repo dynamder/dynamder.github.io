@@ -91,6 +91,9 @@ ShowAllPagesInArchive = true
 ShowPageNums = true
 disableScrollToTop = false
 
+# 评论区总开关：单篇文章可用 front matter 的 comments = false 单独关掉
+comments = true
+
 [params.homeInfoParams]
 Title = "你好，我是 Dynamder 👋"
 Content = """
@@ -124,6 +127,21 @@ distance = 1000
 threshold = 0.4
 minMatchCharLength = 0
 keys = ["title", "permalink", "summary", "content"]
+
+# 评论区：Giscus（基于 GitHub Discussions，零后端零成本）
+# repoId / categoryId 由 API 取得，换仓库时要一起换
+# 还需在仓库上安装 giscus App：https://github.com/apps/giscus/installations/new
+[params.giscus]
+repo = "dynamder/dynamder.github.io"
+repoId = "R_kgDOVnY9Kg"
+category = "Announcements"
+categoryId = "DIC_kwDOVnY9Ks4DKrd3"
+mapping = "pathname" # 按路径映射讨论楼，换标题也不会断
+strict = "0"
+reactionsEnabled = "1"
+emitMetadata = "0"
+inputPosition = "top"
+lang = "zh-CN"
 
 # ─── Markdown 渲染 ───────────────────────────────────────────
 [markup]

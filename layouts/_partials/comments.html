@@ -1,0 +1,72 @@
+{{- /*
+  覆盖 PaperMod 的空评论区钩子（layouts/_partials/comments.html）。
+  配置在 hugo.toml 的 [params.giscus]，由单页的 comments 参数控制开关。
+
+  注意：giscus 需要先在仓库上安装 GitHub App，否则 iframe 里会提示
+  "giscus is not installed on this repository"。
+  安装入口：https://github.com/apps/giscus/installations/new
+*/ -}}
+{{- with site.Params.giscus }}
+{{- if and .repo .repoId .categoryId }}
+<div
+  class="giscus"
+  id="giscus-container"
+  data-repo="{{ .repo }}"
+  data-repo-id="{{ .repoId }}"
+  data-category="{{ .category }}"
+  data-category-id="{{ .categoryId }}"
+  data-mapping="{{ .mapping | default `pathname` }}"
+  data-strict="{{ .strict | default `0` }}"
+  data-reactions-enabled="{{ .reactionsEnabled | default `1` }}"
+  data-emit-metadata="{{ .emitMetadata | default `0` }}"
+  data-input-position="{{ .inputPosition | default `top` }}"
+  data-lang="{{ .lang | default `zh-CN` }}"></div>
+
+<script>
+  (function () {
+    var host = document.getElementById("giscus-container");
+    if (!host) return;
+
+    // PaperMod 把当前主题放在 <html data-theme>，"auto" 时跟随系统
+    function resolveTheme() {
+      var t = document.documentElement.dataset.theme;
+      if (!t || t === "auto") {
+        t = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+      }
+      return t === "dark" ? "dark" : "light";
+    }
+
+    var d = host.dataset;
+    var s = document.createElement("script");
+    s.src = "https://giscus.app/client.js";
+    s.async = true;
+    s.crossOrigin = "anonymous";
+    s.setAttribute("data-repo", d.repo);
+    s.setAttribute("data-repo-id", d.repoId);
+    s.setAttribute("data-category", d.category);
+    s.setAttribute("data-category-id", d.categoryId);
+    s.setAttribute("data-mapping", d.mapping);
+    s.setAttribute("data-strict", d.strict);
+    s.setAttribute("data-reactions-enabled", d.reactionsEnabled);
+    s.setAttribute("data-emit-metadata", d.emitMetadata);
+    s.setAttribute("data-input-position", d.inputPosition);
+    s.setAttribute("data-lang", d.lang);
+    s.setAttribute("data-theme", resolveTheme());
+    host.appendChild(s);
+
+    // 明暗切换时同步 iframe 主题
+    new MutationObserver(function () {
+      var frame = document.querySelector("iframe.giscus-frame");
+      if (!frame) return;
+      frame.contentWindow.postMessage(
+        { giscus: { setConfig: { theme: resolveTheme() } } },
+        "https://giscus.app"
+      );
+    }).observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["data-theme"],
+    });
+  })();
+</script>
+{{- end }}
+{{- end }}
