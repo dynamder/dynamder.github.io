@@ -1,4 +1,4 @@
-module github.com/dynamder/my-blog
+module github.com/dynamder/dynamder.github.io
 
 go 1.26.5
 
