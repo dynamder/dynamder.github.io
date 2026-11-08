@@ -8,6 +8,8 @@
 */ -}}
 {{- with site.Params.giscus }}
 {{- if and .repo .repoId .categoryId }}
+<section class="comments" id="comments">
+<h2 class="comments-title">{{ if eq site.Language.Lang "en" }}Comments{{ else }}评论{{ end }}</h2>
 <div
   class="giscus"
   id="giscus-container"
@@ -33,7 +35,7 @@
       if (!t || t === "auto") {
         t = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
       }
-      return t === "dark" ? "dark" : "light";
+      return t === "dark" ? "transparent_dark" : "light";
     }
 
     var d = host.dataset;
@@ -68,5 +70,6 @@
     });
   })();
 </script>
+</section>
 {{- end }}
 {{- end }}

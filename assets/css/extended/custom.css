@@ -212,3 +212,75 @@ a:focus-visible, button:focus-visible {
         display: none;
     }
 }
+
+/* ─────────────────────────────────────────────────────────────
+   文章尾部：面板统一 + 评论区收束
+
+   原来标签、翻页、分享各自填 --code-bg（比页面底浅一档），
+   而 giscus 面板的底色比页面底深一档，三块叠在一起就成了三层。
+   这里把它们统一成"只描边不填色"，让内容回到页面上。
+   ───────────────────────────────────────────────────────────── */
+
+.post-tags a,
+.share-buttons,
+.paginav {
+    background: transparent;
+    border-color: var(--border);
+}
+
+.post-tags a:hover,
+.paginav a:hover {
+    background: var(--code-bg);
+}
+
+/* 评论区和正文之间给一条硬边界，并补一个标题，
+   否则 giscus 会像凭空浮出来的第三方控件 */
+.comments {
+    margin-top: 72px;
+    padding-top: 32px;
+    border-top: 1px solid var(--border);
+}
+
+.comments-title {
+    margin: 0 0 20px;
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--primary);
+}
+
+/* 文章尾部三块（标签 / 翻页 / 分享）原来彼此只隔 10px，挤成一坨 */
+.post-footer {
+    margin-top: 56px;
+}
+
+.post-footer > * {
+    margin-bottom: 24px;
+}
+
+.post-footer > *:last-child {
+    margin-bottom: 0;
+}
+
+.post-tags {
+    gap: 12px;
+}
+
+.post-tags a {
+    padding: 0 16px;
+    line-height: 36px;
+}
+
+.paginav a {
+    padding: 1.1rem 1.2rem;
+    gap: 0.6rem;
+}
+
+.share-buttons {
+    padding: 14px;
+    gap: 20px;
+}
+
+/* 主题同时用了 gap 和 margin-inline-end，间距翻倍还不均匀 */
+.share-buttons a:not(:last-of-type) {
+    margin-inline-end: 0;
+}
